@@ -114,7 +114,7 @@ knwl.get = function(parser) {
     if (knwl.plugins[parser] !== undefined) {
         try {
             var args = arguments;
-            var data = knwl.plugins[parser].calls(args);
+            var data = knwl.plugins[parser].calls(args, "gr");
             return data;
         } catch (error) {
             console.error('Knwl.js Error', 'Error running parser plugin "' + parser + '"', error);

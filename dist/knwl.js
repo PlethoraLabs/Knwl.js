@@ -17,7 +17,7 @@
 
 var knwl = require('../knwl');
 
-/* Phone Number Parser */
+/* Date Parser */
 var Dates = exports = module.exports;
 
 
@@ -427,7 +427,7 @@ Phones.calls = function() {
 
 var knwl = require('../knwl');
 
-/* Phone Number Parser */
+/* Place Parser */
 var Places = exports = module.exports;
 
 Places.countryList = [
@@ -758,10 +758,26 @@ Places.calls = function() {
 
 var knwl = require('../knwl');
 
-/* Phone Number Parser */
+/* Time Parser */
 var Times = exports = module.exports;
 
-Times.calls = function() {
+Times.calls = function( args, lang ) {
+
+    var terms = {
+        "en" : {
+            "pm"     : "PM",
+            "am"     : "AM",
+            "uknown" : "Uknown"
+        },
+
+        "gr" : {
+            "pm"     : "μμ",
+            "am"     : "πμ",
+            "uknown" : "Άγνωστη"
+        }
+    };
+
+    lang = lang || "en";
 
     var rawWords = knwl.words.words;
 
@@ -777,27 +793,27 @@ Times.calls = function() {
         var testTime = words[i].split(":");
         if (testTime.length === 2) {
             var daynight = false;
-            if (testTime[1].search('am') !== -1) {
+            if (testTime[1].search(terms[lang]['am']) !== -1) {
                 testTime[1] = testTime[1].slice(0, testTime[1].length - 2);
-                daynight = 'AM';
-            } else if (testTime[1].search('pm') !== -1) {
+                daynight = terms[lang]['am'].toUpperCase();
+            } else if (testTime[1].search(terms[lang]['pm']) !== -1) {
                 testTime[1] = testTime[1].slice(0, testTime[1].length - 2);
-                daynight = 'PM';
+                daynight = terms[lang]['pm'].toUpperCase();
             }
             if (!isNaN(testTime[0]) && !isNaN(testTime[1])) {
                 if (testTime[0] > 0 && testTime[0] < 13) {
                     if (testTime[1] >= 0 && testTime[1] < 61) {
-                        if (words[i + 1] === "pm") {
+                        if (words[i + 1] === terms[lang]["pm"]) {
                             timeObj.hour = testTime[0];
                             timeObj.minute = testTime[1];
-                            timeObj.daynight = "PM",
+                            timeObj.daynight = terms[lang]["pm"].toUpperCase(),
                             timeObj.preview = knwl.tasks.preview(i);
                             timeObj.found = i;
                             times.push(timeObj);
-                        } else if (words[i + 1] === "am") {
+                        } else if (words[i + 1] === terms[lang]["am"]) {
                             timeObj.hour = testTime[0];
                             timeObj.minute = testTime[1];
-                            timeObj.daynight = "AM",
+                            timeObj.daynight = terms[lang]["am"].toUpperCase(),
                             timeObj.preview = knwl.tasks.preview(i);
                             timeObj.found = i;
                             times.push(timeObj);
@@ -805,7 +821,7 @@ Times.calls = function() {
                             if (daynight !== false) {
                                 timeObj.hour = testTime[0];
                                 timeObj.minute = testTime[1];
-                                timeObj.daynight = "Unknown",
+                                timeObj.daynight = terms[lang]["unknown"],
                                 timeObj.preview = knwl.tasks.preview(i);
                                 timeObj.found = i;
                                 times.push(timeObj);
@@ -823,7 +839,7 @@ Times.calls = function() {
             if (isNaN(words[i]) !== true) { //is a number
                 var temp = parseInt(words[i]);
                 if (temp > 0 && temp < 13) {
-                    if (words[i + 1] === "am" || words[i + 1] === "pm") {
+                    if (words[i + 1] === terms[lang]["am"] || words[i + 1] === terms[lang]["pm"]) {
                         timeObj.hour = temp;
                         timeObj.minute = '00';
                         timeObj.daynight = words[i + 1].toUpperCase(),
@@ -832,7 +848,7 @@ Times.calls = function() {
                         times.push(timeObj);
                     }
                 }
-            } else if (words[i].search('am') !== -1) {
+            } else if (words[i].search(terms[lang]['am']) !== -1) {
                 var temp = words[i];
                 temp = temp.slice(0, temp.length - 2);
                 temp = parseInt(temp);
@@ -840,13 +856,13 @@ Times.calls = function() {
                     if (temp > 0 && temp < 13) {
                         timeObj.hour = temp;
                         timeObj.minute = '00';
-                        timeObj.daynight = 'AM',
+                        timeObj.daynight = terms[lang]['am'].toUpperCase(),
                         timeObj.preview = knwl.tasks.preview(i);
                         timeObj.found = i;
                         times.push(timeObj);
                     }
                 }
-            } else if (words[i].search('pm') !== -1) {
+            } else if (words[i].search(terms[lang]['pm']) !== -1) {
                 var temp = words[i];
                 temp = temp.slice(0, temp.length - 2);
                 temp = parseInt(temp);
@@ -854,7 +870,7 @@ Times.calls = function() {
                     if (temp > 0 && temp < 13) {
                         timeObj.hour = temp;
                         timeObj.minute = '00';
-                        timeObj.daynight = 'PM',
+                        timeObj.daynight = terms[lang]['pm'].toUpperCase(),
                         timeObj.preview = knwl.tasks.preview(i);
                         timeObj.found = i;
                         times.push(timeObj);
@@ -983,7 +999,7 @@ knwl.get = function(parser) {
     if (knwl.plugins[parser] !== undefined) {
         try {
             var args = arguments;
-            var data = knwl.plugins[parser].calls(args);
+            var data = knwl.plugins[parser].calls(args, "gr");
             return data;
         } catch (error) {
             console.error('Knwl.js Error', 'Error running parser plugin "' + parser + '"', error);
